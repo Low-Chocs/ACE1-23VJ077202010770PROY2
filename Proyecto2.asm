@@ -81,16 +81,25 @@ puntajes      db "Top puntajes$"
 salir         db "Salir$"
 iniciales     db "LMMG - 202010770$"
 nombre db "Luis Mariano Moreira Garcia$"
-espacio db "----------------$"
+espacio db "------------------",0a,"$"
 carnet db "20201070$"
 curso db "ACE1$"
 seccion db "SECCION N$"
+reanudar_texto db "Reanudar$"
 modificar_texto db "Modificar$"
 regresar_texto db "Regresar$"
-derecha_texto db "Derecha: $"
-abajo_texto db "Abajo: $"
-arriba_texto db "Arriba: $"
-izquierda_texto db "Izquierda: $"
+derecha_texto db "Derecha: "
+control_derecha   db  4d
+centinela_3 db "$"
+abajo_texto db "Abajo: "
+control_abajo     db  50
+centinela_2 db "$"
+arriba_texto db "	    Arriba: "
+control_arriba    db  48
+centinela_1 db "$"
+izquierda_texto db "Izquierda: "
+control_izquierda db  4b
+centinela_4 db "$"
 
 ;; JUEGO
 xJugador      db 0
@@ -103,12 +112,14 @@ xFlecha       dw 0
 yFlecha       dw 0
 opcionherramientas        db 0
 maximoherramientas        db 0
+opcion_pausa        db 0
+maximo_pausa        db 0
 ;; CONTROLES
-control_arriba    db  48
+
 hello db "$"
-control_abajo     db  50
-control_izquierda db  4b
-control_derecha   db  4d
+
+
+
 ;; NIVELES
 nivel_x           db  "NIV.00",00
 nivel_0           db  "NIV.00",00
@@ -133,14 +144,16 @@ numero        db  5 dup (30)
 .CODE
 .STARTUP
 
-
 inicio:
+
 		;; MODO VIDEO ;;
 		mov AH, 00
 		mov AL, 13
 		int 10
 		;;;;;;;;;;;;;;;;
         call mensaje_principal
+menu_inicial:
+		call clear_pantalla
 		call menu_principal
 		mov AL, [opcion]
 		;; > INICIAR JUEGO
@@ -150,11 +163,8 @@ inicio:
 		cmp AL, 1
 		je cargar_un_nivel
 		;; > CONFIGURACION
-        cmp AL, 2
+        cmp AL, 3
 		je ir_configuracion
-		mov AL, [opcionherramientas]
-		cmp AL, 1
-		je inicio
 		;; > PUNTAJES ALTOS
 		;; > SALIR
 		cmp AL, 4
@@ -823,7 +833,11 @@ pintar_flecha_menu_configuracion:
 		;;
 	
 fin_menu_configuracion:
-		ret
+		mov AL, [opcionherramientas]
+		cmp AL, 0
+		je cambio_en_configuracion
+		cmp AL, 1
+		je menu_inicial
 
 ;; pintar_flecha - pinta una flecha
 pintar_flecha:
@@ -1114,6 +1128,8 @@ entrada_juego:
 		mov AH, 00
 		int 16
 		;; AH <- scan code
+		cmp AH, 3B
+		je pausar
 		cmp AH, [control_arriba]
 		je mover_jugador_arr
 		cmp AH, [control_abajo]
@@ -1422,8 +1438,237 @@ menu_de_configuraciones:
 		call pintar_flecha
 
 
+cambio_en_configuracion:
+    ; Solicito la tecla para cambiar derecha
+    mov ah, 00
+    int 16
+    ; Almacenar el código de escaneo ingresado en AH
+    mov [control_derecha], ah
+	call refresco_configuracion
 
 
+    ; Solicito la tecla para cambiar abajo
+    mov ah, 00
+    int 16
+    ; Almacenar el código de escaneo ingresado en AH
+    mov [control_abajo], ah
+	call refresco_configuracion
+
+
+    ; Solicito la tecla para cambiar arriba
+    mov ah, 00
+    int 16
+    ; Almacenar el código de escaneo ingresado en AH
+    mov [control_arriba], ah
+	call refresco_configuracion
+
+    ; Solicito la tecla para cambiar izquierda
+    mov ah, 00
+    int 16
+    ; Almacenar el código de escaneo ingresado en AH
+    mov [control_izquierda], ah
+	call refresco_configuracion
+
+
+    jmp menu_inicial
+
+pausar:
+	call menu_pausa
+menu_pausa:
+		;; MODO VIDEO ;;
+		mov AH, 00
+		mov AL, 13
+		int 10
+		call clear_pantalla
+		mov AL, 0
+		mov [opcion_pausa], AL      ;; reinicio de la variable de salida
+		mov AL, 2
+		mov [maximo_pausa], AL
+		mov AX, 50
+		mov BX, 28
+		mov [xFlecha], AX
+		mov [yFlecha], BX
+		;; IMPRIMIR OPCIONES ;;
+		;;;; INICIAR JUEGO
+		mov DL, 0c
+		mov DH, 05
+		mov BH, 00
+		mov AH, 02
+		int 10
+		;; <<-- posicionar el cursor
+		push DX
+		mov DX, offset reanudar_texto
+		mov AH, 09
+		int 21
+		pop DX
+		;;
+		;;;; CARGAR NIVEL
+		add DH, 02
+		mov BH, 00
+		mov AH, 02
+		int 10
+		push DX
+		mov DX, offset regresar_texto
+		mov AH, 09
+		int 21
+		pop DX
+		;;
+	
+		;;;;
+		call pintar_flecha
+		;;;;
+		;; LEER TECLA
+		;;;;
+entrada_menu_pausa:
+		mov AH, 00
+		int 16
+		cmp AH, 48
+		je restar_opcion_menu_pausa
+		cmp AH, 50
+		je sumar_opcion_menu_pausa
+		cmp AH, 3B  ;; le doy F1
+		je fin_menu_pausa
+		jmp entrada_menu_pausa
+restar_opcion_menu_pausa:
+		mov AL, [opcion_pausa]
+		dec AL
+		cmp AL, 0ff
+		je volver_a_cero_pausa
+		mov [opcion_pausa], AL
+		jmp mover_flecha_menu_pausa
+sumar_opcion_menu_pausa:
+		mov AL, [opcion_pausa]
+		mov AH, [maximo_pausa]
+		inc AL
+		cmp AL, AH
+		je volver_a_maximo_pausa
+		mov [opcion_pausa], AL
+		jmp mover_flecha_menu_pausa
+volver_a_cero_pausa:
+		mov AL, 0
+		mov [opcion_pausa], AL
+		jmp mover_flecha_menu_pausa
+volver_a_maximo_pausa:
+		mov AL, [maximo_pausa]
+		dec AL
+		mov [opcion_pausa], AL
+		jmp mover_flecha_menu_pausa
+mover_flecha_menu_pausa:
+		mov AX, [xFlecha]
+		mov BX, [yFlecha]
+		mov SI, offset dim_sprite_vacio
+		mov DI, offset data_sprite_vacio
+		call pintar_sprite
+		mov AX, 50
+		mov BX, 28
+		mov CL, [opcion_pausa]
+ciclo_ubicar_flecha_menu_pausa:
+		cmp CL, 0
+		je pintar_flecha_menu_pausa
+		dec CL
+		add BX, 10
+		jmp ciclo_ubicar_flecha_menu_pausa
+pintar_flecha_menu_pausa:
+		mov [xFlecha], AX
+		mov [yFlecha], BX
+		call pintar_flecha
+		jmp entrada_menu_pausa
+		;;
+fin_menu_pausa:
+		mov AL, [opcion_pausa]
+		cmp AL, 0
+		je ciclo_juego
+		cmp AL, 1
+		je menu_inicial
+
+final:
+	
+
+
+refresco_configuracion:
+        call clear_pantalla
+
+
+		;;;; INICIAR JUEGO
+		mov DL, 0c
+		mov DH, 05
+		mov BH, 00
+		mov AH, 02
+		int 10
+
+		;; <<-- posicionar el cursor
+
+		push DX
+		mov DX, offset modificar_texto
+		mov AH, 09
+		int 21
+		pop DX
+		;;
+		;;;; CARGAR NIVEL
+		add DH, 02
+		mov BH, 00
+		mov AH, 02
+		int 10
+		push DX
+		mov DX, offset regresar_texto
+		mov AH, 09
+		int 21
+		pop DX
+			
+		
+		add DH, 02
+		mov BH, 00
+		mov AH, 02
+		int 10
+		push DX
+		mov DX, offset espacio
+		mov AH, 09
+		int 21
+		pop DX
+
+				;; IMPRIMIR OPCIONES ;;
+		add DH, 02
+		mov BH, 00
+		mov AH, 02
+		push DX
+		mov DX, offset Arriba_texto
+		mov AH, 09
+		int 21
+		pop DX
+
+		add DH, 02
+		mov BH, 00
+		mov AH, 02
+		int 10
+
+		push DX
+		mov DX, offset Abajo_texto
+		mov AH, 09
+		int 21
+		pop DX
+
+		add DH, 02
+		mov BH, 00
+		mov AH, 02
+		int 10
+
+		push DX
+		mov DX, offset Izquierda_texto
+		mov AH, 09
+		int 21
+		pop DX
+
+		add DH, 02
+		mov BH, 00
+		mov AH, 02
+		int 10
+
+		push DX
+		mov DX, offset derecha_texto
+		mov AH, 09
+		int 21
+		pop DX
+		ret
 fin:
 .EXIT
 END
