@@ -8,7 +8,7 @@ SUELO       equ      05
 .RADIX 16
 .STACK
 .DATA
-;;
+;;Data
 dim_sprite_jug    db   08, 08
 data_sprite_jug   db   2A, 2A, 31, 31, 2C, 2C, 2C, 2A
                   db   2A, 07, 31, 2C, 5A, 2C, 2C, 2C
@@ -47,14 +47,14 @@ data_sprite_suelo db   2A, 2A, 2A, 2A, 2A, 2A, 2A, 2A
                   db   2A, 2A, 2A, 2A, 2A, 2A, 2A, 2A
 
 dim_sprite_pared  db   08, 08
-data_sprite_pared db   35, 35, 0f, 0f, 35, 35, 0f, 0f
-                  db   35, 0f, 0f, 35, 35, 0f, 0f, 35
-                  db   0f, 0f, 35, 35, 0f, 0f, 35, 35
-                  db   0f, 35, 35, 0f, 0f, 35, 35, 0f
-                  db   35, 35, 0f, 0f, 35, 35, 0f, 0f
-                  db   35, 0f, 0f, 35, 35, 0f, 0f, 35
-                  db   0f, 0f, 35, 35, 0f, 0f, 35, 35
-                  db   0f, 35, 35, 0f, 0f, 35, 35, 0f
+data_sprite_pared db   29, 29, 00, 00, 29, 29, 00, 00
+                  db   29, 00, 00, 29, 29, 00, 00, 29
+                  db   00, 00, 29, 29, 00, 00, 29, 29
+                  db   00, 29, 29, 00, 00, 29, 29, 00
+                  db   29, 29, 00, 00, 29, 29, 00, 00
+                  db   29, 00, 00, 29, 29, 00, 00, 29
+                  db   00, 00, 29, 29, 00, 00, 29, 29
+                  db   00, 29, 29, 00, 00, 29, 29, 00
 dim_sprite_caja   db   08, 08
 data_sprite_caja  db  20h, 20h, 20h, 20h, 20h, 20h, 20h, 20h
                         db  20h, 20h, 2Fh, 2Fh, 2Fh, 2Fh, 20h, 20h
@@ -65,14 +65,15 @@ data_sprite_caja  db  20h, 20h, 20h, 20h, 20h, 20h, 20h, 20h
                         db  20h, 20h, 20h, 2Fh, 2Fh, 20h, 20h, 20h
                         db  20h, 20h, 20h, 20h, 20h, 20h, 20h, 20h
 dim_sprite_obj    db   08, 08
-data_sprite_obj   db  5c,5c,5c,5c,5c,5c,5c,5c
-                  db  5c,28,5c,5c,5c,5c,28,5c
-                  db  5c,5c,28,5c,5c,28,5c,5c
-                  db  5c,5c,5c,28,28,5c,5c,5c
-                  db  5c,5c,5c,28,28,5c,5c,5c
-                  db  5c,5c,28,5c,5c,28,5c,5c
-                  db  5c,28,5c,5c,5c,5c,28,5c
-                  db  5c,5c,5c,5c,5c,5c,5c,5c
+data_sprite_obj   db  2A, 2A, 2A, 2A, 2A, 2A, 2A, 2A
+                  db  2A, 55, 2A, 2A, 2A, 2A, 55, 2A
+                  db  2A, 2A, 55, 2A, 2A, 55, 2A, 2A
+                  db  2A, 2A, 2A, 55, 55, 2A, 2A, 2A
+                  db  2A, 2A, 2A, 55, 55, 2A, 2A, 2A
+                  db  2A, 2A, 55, 2A, 2A, 55, 2A, 2A
+                  db  2A, 55, 2A, 2A, 2A, 2A, 55, 2A
+                  db  2A, 2A, 2A, 2A, 2A, 2A, 2A, 2A
+
 mapa              db   3e8 dup (0)
 iniciar_juego db "Nuevo Juego$"
 cargar_nivel  db "Cargar nivel$"
